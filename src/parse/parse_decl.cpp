@@ -135,7 +135,12 @@ FunDeclStatement* Parser::ParseFunPrototype(types::Type* hint) {
 
   auto formals = ParseFormals();
 
-  return new FunDeclStatement{fun_name, std::move(formals), nullptr, hint};
+  types::Type* return_annotation = nullptr;
+  if (Matches(lex::TokenType::ARROW)) {
+    return_annotation = ParseType();
+  }
+
+  return new FunDeclStatement{fun_name, std::move(formals), nullptr, return_annotation ? return_annotation : hint};
 }
 
 ///////////////////////////////////////////////////////////////////
@@ -326,6 +331,14 @@ VarDeclStatement* Parser::ParseVarDeclStatement(types::Type* hint) {
   Consume(lex::TokenType::IDENTIFIER);
   auto lvalue = new VarAccessExpression{lexer_.GetPreviousToken()};
 
+
+  // 1.5 Optional type annotation
+
+  types::Type* type_annotation = nullptr;
+  if (Matches(lex::TokenType::COLON)) {
+    type_annotation = ParseType();
+  }
+
   // 2. Get an expression to assign to
 
   Consume(lex::TokenType::ASSIGN);
@@ -334,7 +347,7 @@ VarDeclStatement* Parser::ParseVarDeclStatement(types::Type* hint) {
 
   Consume(lex::TokenType::SEMICOLON);
 
-  return new VarDeclStatement{lvalue, value, hint};
+  return new VarDeclStatement{lvalue, value, type_annotation ? type_annotation : hint};
 }
 
 ///////////////////////////////////////////////////////////////////

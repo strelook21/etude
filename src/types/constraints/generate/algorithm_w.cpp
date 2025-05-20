@@ -29,6 +29,9 @@ void AlgorithmW::VisitVarDecl(VarDeclStatement* node) {
 
   auto ty = symbol->GetType();
 
+  if (node->annotation_) {
+    PushEqual(node->GetLocation(), ty, node->annotation_);
+  }
   PushEqual(node->GetLocation(), ty, Eval(node->value_));
 }
 
@@ -69,7 +72,6 @@ void AlgorithmW::VisitFunDecl(FunDeclStatement* node) {
   } else {
     PushEqual(node->GetLocation(), ty, symbol->GetType());
   }
-
   PushEqual(node->GetLocation(), Eval(node->body_), ty->as_fun.result_type);
 
   node->type_ = return_value = ty;
